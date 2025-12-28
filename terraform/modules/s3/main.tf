@@ -22,6 +22,8 @@ resource "aws_s3_bucket_public_access_block" "uploads" {
     restrict_public_buckets = true    # further protection
 }
 
+
+
 # ACL = Access Control List --> who can access the bucket or an object + which permissions there are
 
 # Per S3 ho usato un module because I'm not just creating a bucket, I have the lifecylce rule, public access etc, so in this way I don't eed to rewrite everything each time, I can just refer to this module
