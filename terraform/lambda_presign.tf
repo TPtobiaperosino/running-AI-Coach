@@ -15,6 +15,7 @@ resource "aws_lambda_function" "presign" {
     environment {
         variables = {
             UPLOADS_BUCKET = "aws_s3_bucket.uploads.id" # --> I need to define this as a variable because python cannot read terraform, so at runtime level I need a way to refer to the bucket
+            TABLE_NAME = aws_dynamodb_table.recommendations.name
         }
     }
     timeout = 10

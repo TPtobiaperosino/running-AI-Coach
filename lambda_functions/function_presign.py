@@ -11,7 +11,8 @@
 import json
 import os
 import uuid
-import boto3 
+import boto3  
+from datetime import datetime, timezone
 
 # first of all I need to create a client to make possible to connect python with the aws service s3. Python cannot communicate with s3 by itself
 # s3 is a python object which knows where is s3, how to authenticate, which APIs exist 
@@ -40,8 +41,11 @@ import boto3
 # API Gateway = front door of my backend that exposes HTTPS endpoints, receives HTTPS requests from clients and forward them to the right backend service (routing)
 
 s3 = boto3.client("s3") # creating the bridge between python and S3 through the SDK (boto3) --> the client s3
+dynamodb = boto3.resource("dynamodb")
 
 BUCKET_NAME = os.environ["UPLOADS_BUCKET"] # here I could use the real name of the bucket but is hardcoded, is safer to use variables
+TABLE_NAME = os.environ["TABLE_NAME"]   
+recommendations_table = dynamodb.Table(TABLE_NAME)
 
 def handler(event, context):
     user_id = event["requestContext"]["authorizer"]["jwt"]["claims"]["sub"] # all these are keys in the dict event that define the user_id from cognito
@@ -54,7 +58,27 @@ def handler(event, context):
 # claims = fields inside jwt
 # sub = userId
 
+    claims = event["requestContext"]["authorizer"]["jwt"]["claims"]
+
+    targets = {
+        "calories": int(claims["custom:targetCalories"]), #custom is the other type of attributes in cognito that I define. with int I convert the string in number
+        "protein": int(claims["custom:targetProtein"]),
+        "carbs": int(claims["custom:targetCarbs"]),
+        "fat": int(claims["custom:targetFat"]),
+    }
+
     upload_id = str(uuid.uuid4()) #uuid is a library/module used to create Universally Unique Identifier, uuid4 is the function to create RANDOM uuid
+
+    recommendations_table.put_item(
+        Item={
+            "PK": f"USER_{user_id}",
+            "SK": f"UPLOAD_{upload_id}",
+            "targets": targets,
+            "createdAt": datetime.now(timezone.utc).isoformat(), #isoformat convert the object datetime in string date format
+            "status": "UPLOADING"
+
+        }
+    )
 
     s3_key = f"uploads/{user_id}/{upload_id}.jpg"
 
@@ -74,7 +98,8 @@ def handler(event, context):
             "Content-Type": "application/json"
         },
         "body": json.dumps({            # frontend works with JSON, API Gateway expects a string, with json.dumps i get as body a JSON string
-            "uploadUrl": upload_url,            
-            "s3Key": s3_key
+            "uploadUrl": upload_url,    # these data arrive to the frontend        
+            "s3Key": s3_key,
+            "uploadId": upload_id
         })
     }

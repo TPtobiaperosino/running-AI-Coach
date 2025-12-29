@@ -2,9 +2,9 @@ resource "aws_dynamodb_table" "recommendations" {
   name         = "ai-running-coach-recommendations"
   billing_mode = "PAY_PER_REQUEST" # If i don't put on-demand the standard is provisioned
 
-  hash_key = "userId" # primary key
+  PK = "userId" # primary key
 
-  range_key = "createdAt" # sort key
+  SK = "createdAt" # sort key
 
   attribute {
     name = "userId"
