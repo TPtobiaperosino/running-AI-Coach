@@ -47,18 +47,23 @@ function CallbackContent() {
       return;
     }
 
-    if (!returnedState || !storedState) {
-      console.error("State is missing");
+    if (!returnedState) {
+      console.error("State is missing from callback");
       return;
     }
 
-    if (returnedState !== storedState) {
+    if (storedState && returnedState !== storedState) {
       console.error("Invalid state");
       return;
     }
 
-    sessionStorage.removeItem("oauth_state");
-    console.log("State validated successfully");
+    // If storedState is missing (e.g., user refreshed on callback), proceed but log a warning.
+    if (!storedState) {
+      console.warn("State missing in sessionStorage; proceeding with token exchange.");
+    } else {
+      sessionStorage.removeItem("oauth_state");
+      console.log("State validated successfully");
+    }
     console.log("Authorisation code:", code);
 
     exchangeCodeForJWT(code)
