@@ -1,6 +1,7 @@
 resource "aws_amplify_app" "frontend" {
   name       = "fitness-ai-coach"
   repository = "https://github.com/TPtobiaperosino/AI-Coach"
+  platform   = "WEB_COMPUTE" # required for SSR (Next.js) on Amplify
 
   # The build_spec defines how Amplify builds the Next.js app
   build_spec = <<-EOT
