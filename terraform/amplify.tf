@@ -5,29 +5,28 @@ resource "aws_amplify_app" "frontend" {
   # The build_spec defines how Amplify builds the Next.js app
   build_spec = <<-EOT
     version: 1
-    frontend:
-      phases:
-        preBuild:
-          commands:
-            - cd frontend
-            - npm ci
-        build:
-          commands:
-            - cd frontend
-            - npm run build
-      artifacts:
-        baseDirectory: frontend/.next
-        files:
-          - '**/*'
-      cache:
-        paths:
-          - frontend/node_modules/**/*
+    applications:
+      - appRoot: frontend
+        frontend:
+          phases:
+            preBuild:
+              commands:
+                - npm ci
+            build:
+              commands:
+                - npm run build
+          artifacts:
+            baseDirectory: .next
+            files:
+              - '**/*'
+          cache:
+            paths:
+              - node_modules/**/*
   EOT
 
   # Environment variables for the build process
   environment_variables = {
     NEXT_PUBLIC_API_BASE       = aws_apigatewayv2_api.http_api.api_endpoint
-    AMPLIFY_MONOREPO_APP_ROOT  = "frontend"
     NODE_VERSION               = "20"
   }
 
