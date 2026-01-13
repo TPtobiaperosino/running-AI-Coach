@@ -13,6 +13,7 @@ import os
 import uuid
 import boto3  
 from datetime import datetime, timezone
+from botocore.config import Config
 
 # first of all I need to create a client to make possible to connect python with the aws service s3. Python cannot communicate with s3 by itself
 # s3 is a python object which knows where is s3, how to authenticate, which APIs exist 
@@ -23,6 +24,8 @@ from datetime import datetime, timezone
 # boto3 always uses Default Credential Provuder Chain --> automatically look for credentials in the environment based on the resource is linking to
 # boto3 knbows the aws APIs (endpoints HTTP), is a wrapper on the APIs
 # I could also calls the APIs manually, but would be very time consuming and less scalable, more likely to make mistakes
+
+AWS_REGION = os.environ.get("AWS_REGION", "eu-west-2")
 
 # what is an endpoint? --> an access point that allows to send a request and gain/do something.
 # endpoint = HTTP method + (HET, PUT, POST...)URL path (with the action, presign for example) --> POST https://api.myapp.com/presign
@@ -40,7 +43,13 @@ from datetime import datetime, timezone
 
 # API Gateway = front door of my backend that exposes HTTPS endpoints, receives HTTPS requests from clients and forward them to the right backend service (routing)
 
-s3 = boto3.client("s3") # creating the bridge between python and S3 through the SDK (boto3) --> the client s3
+# Force region-specific endpoint to avoid 301 redirects (breaks browser CORS preflight).
+s3 = boto3.client(
+    "s3",
+    region_name=AWS_REGION,
+    endpoint_url=f"https://s3.{AWS_REGION}.amazonaws.com",
+    config=Config(signature_version="s3v4")
+) # creating the bridge between python and S3 through the SDK (boto3) --> the client s3
 dynamodb = boto3.resource("dynamodb")
 
 BUCKET_NAME = os.environ["UPLOADS_BUCKET"] # here I could use the real name of the bucket but is hardcoded, is safer to use variables
