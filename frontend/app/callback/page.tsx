@@ -13,12 +13,17 @@ async function exchangeCodeForJWT(code: string) {
     process.env.NEXT_PUBLIC_COGNITO_DOMAIN?.replace(/\/$/, "")?.concat("/oauth2/token") ||
     "https://ai-fitness-coach-tobia.auth.eu-west-2.amazoncognito.com/oauth2/token";
 
+  const runtimeRedirect =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/callback`
+      : "http://localhost:3000/callback";
+
   const body = new URLSearchParams({
     grant_type: "authorization_code",
     client_id: process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID || "4bno9kh90ejdpvj4kqvcjn9c8e",
     code,
-    // Must match an allowed callback in Cognito; keep fallback to Amplify domain.
-    redirect_uri: process.env.NEXT_PUBLIC_COGNITO_REDIRECT_URI || "https://main.d21xmugc315cvv.amplifyapp.com/callback",
+    // Must match an allowed callback in Cognito; prefer env, then current origin (works for localhost + Amplify).
+    redirect_uri: process.env.NEXT_PUBLIC_COGNITO_REDIRECT_URI || runtimeRedirect,
   });
 
   const response = await fetch(tokenEndpoint, {

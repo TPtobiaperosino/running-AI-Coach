@@ -52,11 +52,14 @@ export default function HomePage() {
       "https://ai-fitness-coach-tobia.auth.eu-west-2.amazoncognito.com";
     const clientId =
       process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID || "4bno9kh90ejdpvj4kqvcjn9c8e";
-    // Force a fixed redirect so it always matches the Cognito allowlist.
+    // Prefer env; otherwise use current origin (works for localhost + Amplify).
+    const runtimeRedirect =
+      typeof window !== "undefined"
+        ? `${window.location.origin}/callback`
+        : "http://localhost:3000/callback";
     const redirectUri = encodeURIComponent(
-      process.env.NEXT_PUBLIC_COGNITO_REDIRECT_URI ||
-      "https://main.d21xmugc315cvv.amplifyapp.com/callback"
-    ); // must match exactly the callback URL in Cognito
+      process.env.NEXT_PUBLIC_COGNITO_REDIRECT_URI || runtimeRedirect
+    ); // must match exactly the callback URL in Cognito allow list
     const scope = encodeURIComponent("openid email profile");
     // 
     const url =
