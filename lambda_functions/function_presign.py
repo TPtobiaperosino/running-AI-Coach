@@ -12,7 +12,7 @@ import json
 import os
 import uuid
 import boto3  
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from botocore.config import Config
 
 # first of all I need to create a client to make possible to connect python with the aws service s3. Python cannot communicate with s3 by itself
@@ -80,6 +80,7 @@ def handler(event, context):
 
     upload_id = str(uuid.uuid4()) #uuid is a library/module used to create Universally Unique Identifier, uuid4 is the function to create RANDOM uuid
     s3_key = f"uploads/{user_id}/{upload_id}.jpg"
+    expires_at = int((datetime.now(timezone.utc) + timedelta(days=1)).timestamp())
     recommendations_table.put_item(
         Item={
             "PK": f"USER_{user_id}",
@@ -87,6 +88,7 @@ def handler(event, context):
      #       "targets": targets,
             "s3Key": s3_key,
             "createdAt": datetime.now(timezone.utc).isoformat(), #isoformat convert the object datetime in string date format
+            "expiresAt": expires_at,
             "status": "UPLOADING"
 
         }

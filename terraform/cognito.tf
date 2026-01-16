@@ -73,10 +73,16 @@ resource "aws_cognito_user_pool_client" "frontend" {
 
   callback_urls = [
     "http://localhost:3000",
-    "http://localhost:3000/callback"
+    "http://localhost:3000/callback",
+    "https://main.d21xmugc315cvv.amplifyapp.com",
+    "https://main.d21xmugc315cvv.amplifyapp.com/callback"
   ]
 
-  logout_urls = ["http://localhost:3000"]
+  logout_urls = [
+    "http://localhost:3000",
+    "https://main.d21xmugc315cvv.amplifyapp.com",
+    "https://main.d21xmugc315cvv.amplifyapp.com/callback"
+  ]
 }
 
 # -------------------------------------------------
